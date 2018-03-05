@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+    <meta charset="UTF-8">
+    <title>Log In</title>
+    <style>
+    * {
+        margin: 0;
+        padding: 0;
+        font-family: monospace;
+        color: green;
+    }
+
+    .wrapper {
+        width: 100%;
+        background-color: black;
+        min-height: 100vh;
+    }
+
+    .content, .success, .capcha {
+        background-color: rgba(0, 0, 0, .5);
+        border: 1px solid green;
+        border-radius: 5px;
+        width: 33.333%;
+        margin: auto;
+        position: relative;
+        top: 25vh;
+        padding: 15px
+    }
+
+    input:not([type="checkbox"]) {
+        display: block;
+        width: 66.6666%;
+        border: none;
+        border-radius: 5px;
+        margin: 17px auto;
+        line-height: 30px;
+    }
+
+    input {
+    	background-color: black;
+    }
+
+    input[placeholder] {
+        text-indent: 3px;
+        color: green;
+    }
+
+    button:not([disabled]) {
+        display: block;
+        margin: auto;
+        background-color: green;
+        border: none;
+        border-radius: 5px;
+        font-size: 24px;
+        margin-top: 50px;
+        padding: 5px;
+    }
+
+    button {
+        display: block;
+        color: black;
+        margin: auto;
+        background-color: green;
+        border: none;
+        border-radius: 5px;
+        font-size: 24px;
+        margin-top: 50px;
+        padding: 5px;
+    }
+
+    label {
+        display: block;
+        margin: auto;
+        text-align: center;
+        font-size: 18px;
+    }
+    .error {
+    	color: red;
+    	font-size: 16px;
+    }
+    .success, .capcha {
+    	display: none;
+    	position: absolute;
+	    top: 25%;
+	    left: -3%;
+	    width: 100%;
+	    height: 200px;
+	    text-align: center;
+	    line-height: 200px;
+	    color: green;
+	    background: black;
+    }
+    .capcha {
+        line-height: 1;
+    }
+    </style>
+</head>
+
+<body>
+    <div class="wrapper">
+        <div class="content">
+            <form action="#">
+                <input type="text" placeholder="Type your name" required id="name">
+                <input type="email" placeholder="Type your e-mail" id="email">
+                <input type="password" placeholder="Type your password" id="pass">
+                <input type="password" placeholder="Repeat your password" id="passRep">
+                <label for="checkbox1">
+                    <input type="checkbox" id="checkbox1"> I agree with terms
+                </label>
+                <label for="checkbox2">
+                    <input type="checkbox" id="checkbox2"> I REALLY WANT TO REGISTER
+                </label>
+                <button type="button" id="formSubmit">Submit</button>
+            </form>
+            <div class="success">
+            	<h2>Registration complete!</h2>
+            </div>
+            <div class="capcha">
+                <h2>Are you a robot?</h2>
+                <p>Calculate please:</p>
+                <span id="fn"></span> + <span id="sn"></span>
+                <input type="text" id="answer" placeholder="Type your answer">
+                <button id="capchaSubmit">Submit</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    $('#formSubmit').on('click', function() {
+        var check = 0;
+        if ($('form').find('.error')) {
+        	$('.error').remove();
+        }
+        function checkName (name) {
+            if (name.val().length > 3) {
+                return check++;
+            } else {
+                return $('#name').after('<div class="error">Name should be more than 3 letters!</div>');
+            }
+        };
+
+        function checkMail (email) {
+            var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            var em = email.val();
+            if (re.test(em)) {
+                return check++;
+            } else {
+                return $('#email').after('<div class="error">Email is not valid!</div>');
+            }
+        };
+
+        function checkPass (pass, passRep) {
+            var p = pass.val();            
+            var pR = passRep.val();
+            if (p.length >= 6) {
+                check++;
+                if (p === pR) {
+                    return check++;
+                } else {
+                    return $('#passRep').after('<div class="error">Passwords do not match</div>');
+                }
+            } else {
+                return $('#pass').after('<div class="error">Password should be more than 6 letters!</div>');
+            }            
+        };
+
+        function checkAgree () {
+        	var firstCheck = $('#checkbox1');
+        	if (firstCheck.prop('checked')) {
+        		return check++;
+        	} else {
+        		return firstCheck.parent().after('<div class="error">Please, agree with our terms!</div>');
+        	}
+        };
+
+        function checkAgreeTwo () {
+        	var secondCheck = $('#checkbox2');
+        	if (secondCheck.is(':checked')) {
+        		return check++;
+        	} else {
+        		return secondCheck.parent().after('<div class="error">Please, agree with our terms!</div>');
+        	}
+        };
+
+        function getRand () {
+            return Math.floor(Math.random() * 50) + 1;
+        };
+
+        function appendRand() {
+            $('#fn').text(getRand());
+            $('#sn').text(getRand());
+        };
+
+        checkName($('#name'));
+        checkMail($('#email'));
+        checkPass($('#pass'), $('#passRep'));
+        checkAgree(); checkAgreeTwo();
+
+        if (check == 6) {
+            appendRand();
+            $('.capcha').fadeIn();
+            $('#capchaSubmit').click(function() {
+                var c1 = Number($('#fn').text());
+                var c2 = Number($('#sn').text());
+                if( c1 + c2 ==  $('#answer').val() ) {
+                    $('.capcha').fadeOut();
+                    $('.success').fadeIn('slow');
+                    setTimeout(function() {
+                        $('.success').fadeOut('slow');
+                        $('input').val('');
+                        $('input[type="checkbox"]').removeAttr('checked');
+                    }, 3000);
+                } else {
+                    $('#answer').after('<div class="error">Wrong capcha</div>');
+                    appendRand();
+                }                
+            })        	
+        }
+    });
+    </script>
+</body>
+
+</html>
